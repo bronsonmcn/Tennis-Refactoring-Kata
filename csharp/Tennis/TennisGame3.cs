@@ -1,43 +1,69 @@
+using System;
+
 namespace Tennis
 {
+    public class Player
+    {
+        public string Name { get; set; }
+        public int Points { get; set; }
+
+        public Player(string name)
+        {
+            Name = name;
+            Points = 0;
+        }
+
+        public static Player GetWinningPlayer(Player p1, Player p2)
+        {
+            return p1.Points > p2.Points ? p1 : p2;
+        }
+        
+        
+    }
     public class TennisGame3 : ITennisGame
     {
-        private int p2;
-        private int p1;
-        private string p1N;
-        private string p2N;
+        private Player _player1;
+        private Player _player2;
+        
+        private readonly string[] _pointNames = { "Love", "Fifteen", "Thirty", "Forty" };
+
 
         public TennisGame3(string player1Name, string player2Name)
         {
-            this.p1N = player1Name;
-            this.p2N = player2Name;
+            _player1 = new Player(player1Name);
+            _player2 = new Player(player2Name);
         }
 
         public string GetScore()
         {
-            string s;
-            if ((p1 < 4 && p2 < 4) && (p1 + p2 < 6))
+            // pre-advantage
+            if (_player1.Points < 4 && _player2.Points < 4 && _player1.Points + _player2.Points < 6)
             {
-                string[] p = { "Love", "Fifteen", "Thirty", "Forty" };
-                s = p[p1];
-                return (p1 == p2) ? s + "-All" : s + "-" + p[p2];
+                return _player1.Points == _player2.Points 
+                    ? _pointNames[_player1.Points] + "-All" 
+                    : _pointNames[_player1.Points] + "-" + _pointNames[_player2.Points];
             }
-            else
-            {
-                if (p1 == p2)
-                    return "Deuce";
-                s = p1 > p2 ? p1N : p2N;
-                return ((p1 - p2) * (p1 - p2) == 1) ? "Advantage " + s : "Win for " + s;
-            }
+            
+            // post advantage
+            if (_player1.Points == _player2.Points)
+                return "Deuce";
+
+            var winningPlayerName = Player.GetWinningPlayer(_player1, _player2).Name;
+            var pointDifference = Math.Abs(_player1.Points - _player2.Points);
+            
+            return pointDifference == 1 
+                ? "Advantage " + winningPlayerName 
+                : "Win for " + winningPlayerName;
         }
 
         public void WonPoint(string playerName)
         {
-            if (playerName == "player1")
-                this.p1 += 1;
+            if (playerName == _player1.Name)
+                _player1.Points += 1;
+            else if (playerName == _player2.Name)
+                _player2.Points += 1;
             else
-                this.p2 += 1;
+                throw new Exception($"Invalid player name: {playerName}");
         }
-
     }
 }
